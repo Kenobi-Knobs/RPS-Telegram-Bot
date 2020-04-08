@@ -2,16 +2,17 @@ import telebot
 import requests
 import threading
 import time
+from telebot import types
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-token = "YOUR TOKEN"
+token = "TOKEN"
 print(token)
 
 bot = telebot.TeleBot(token)
 wait_time = 60# /10
 games = {}
 markup = InlineKeyboardMarkup()
-markup.add(InlineKeyboardButton("🤜", callback_data="rock"),InlineKeyboardButton("✌️", callback_data="scissor"),InlineKeyboardButton("✋", callback_data="paper"))
+markup.add(InlineKeyboardButton("👊", callback_data="rock"),InlineKeyboardButton("✌️", callback_data="scissor"),InlineKeyboardButton("✋", callback_data="paper"))
 
 
 class Game:
@@ -57,7 +58,7 @@ def wait_game(mess_id, chat_id):
     try:
         while games[str(mess_id) + str(chat_id)].wait_time > 0:
             time.sleep(10)
-            games[str(mess_id) + str(chat_id)].wait_time -=10;
+            games[str(mess_id) + str(chat_id)].wait_time -= 10;
             refresh_message(mess_id, chat_id)
         delete_game(mess_id, chat_id)
     except:
@@ -70,7 +71,7 @@ def start_game(mess_id, chat_id, wait_time):
 
 def emoji(str):
     if str == "rock":
-        return "🤜"
+        return "👊"
     if str == "scissor":
         return "✌️"
     if str == "paper":
@@ -91,30 +92,30 @@ def check_winner(mess_id, chat_id):
     player2 = games[str(mess_id) + str(chat_id)].user[1].split("|")
 
     if player1[2] == player2[2]:
-        show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nНичья")
+        show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nНичья🤷‍♂️")
     else:
         if player1[2] == "rock" and player2[2] == "scissor":
-            show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nПобедил(а): " + player1[1])
+            show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nПобедил(а): 🎉" + player1[1])
         if player2[2] == "rock" and player1[2] == "scissor":
-            show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nПобедил(а): " + player2[1])
+            show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nПобедил(а): 🎉" + player2[1])
 
         if player1[2] == "scissor" and player2[2] == "paper":
-            show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nПобедил(а): " + player1[1])
+            show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nПобедил(а): 🎉" + player1[1])
         if player2[2] == "scissor" and player1[2] == "paper":
-            show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nПобедил(а): " + player2[1])
+            show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nПобедил(а): 🎉" + player2[1])
 
         if player1[2] == "paper" and player2[2] == "rock":
-            show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nПобедил(а): " + player1[1])
+            show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nПобедил(а): 🎉" + player1[1])
         if player2[2] == "paper" and player1[2] == "rock":
-            show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nПобедил(а): " + player2[1])
+            show_win(mess_id,chat_id, player1[1] + emoji(player1[2]) + " \n     VS\n " + player2[1] + emoji(player2[2]) +"\n\nПобедил(а): 🎉" + player2[1])
 
 @bot.message_handler(commands=['rps_game'])
 def rps_game_comm(message):
     global wait_time
+    str = message.text.split(" ")
     if message.chat.type != "private":
         mess = bot.reply_to(message, " Ожидаю игроков...\n ? VS ? \n Осталось: "+ str(wait_time) +"с \n Чтобы присоединится выбери что-то",reply_markup=markup)
         start_game(mess.message_id, mess.chat.id, wait_time)
-
 
 @bot.callback_query_handler(func=lambda c:True)
 def inline(c):
@@ -130,22 +131,27 @@ def inline(c):
     user_name = str(c.from_user.first_name) + " " + last_name
     user_name.strip()
 
+    try:
+        curent_users_id = []
+        for player in  games[str(mess_id) + str(chat_id)].user:
+            if player != None:
+                curent_users_id.append(str(player).split("|")[0])
 
-    curent_users_id = []
-    for player in  games[str(mess_id) + str(chat_id)].user:
-        if player != None:
-            curent_users_id.append(str(player).split("|")[0])
-
-    if str(user_id) in curent_users_id:
-        bot.answer_callback_query(c.id, text="Ты уже в игре")
-    else:
-        if games[str(mess_id) + str(chat_id)].user[0] == None or games[str(mess_id) + str(chat_id)].user[1] == None:
-            games[str(mess_id) + str(chat_id)].add_user(user_id, user_name, hand)
-            bot.answer_callback_query(c.id, text="Ты выбрал " + emoji(hand))
-            refresh_message(mess_id, chat_id)
-            if games[str(mess_id) + str(chat_id)].count > 1 :
-                check_winner(mess_id, chat_id)
+        if str(user_id) in curent_users_id:
+            bot.answer_callback_query(c.id, text="Ты уже в игре")
         else:
-            bot.answer_callback_query(c.id, text="Ты лишний :(")
+            if games[str(mess_id) + str(chat_id)].user[0] == None or games[str(mess_id) + str(chat_id)].user[1] == None:
+                games[str(mess_id) + str(chat_id)].add_user(user_id, user_name, hand)
+                bot.answer_callback_query(c.id, text="Ты выбрал " + emoji(hand))
+                refresh_message(mess_id, chat_id)
+                if games[str(mess_id) + str(chat_id)].count > 1 :
+                    check_winner(mess_id, chat_id)
+            else:
+                bot.answer_callback_query(c.id, text="Ты лишний :(")
+    except:
+        return 0
 
-bot.polling(none_stop=True, interval=0)
+
+
+bot.infinity_polling(True)
+
